@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function command_exists () {
+  type "$1" &> /dev/null ;
+}
+
+if command_exists cargo; then
+  echo "Rust already installed"
+else
+  echo "Installing rust"
+  curl https://sh.rustup.rs -sS | sh -s -- -y
+fi

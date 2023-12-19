@@ -3,11 +3,12 @@ use std::env;
 use std::process;
 
 use crate::command_line_arguments::CLICommand;
-use crate::command_line_arguments::RunOrInit::Init;
-use crate::command_line_arguments::RunOrInit::Run;
+use crate::command_line_arguments::RunOrInit::*;
 mod command_line_arguments;
 
 fn main() {
+    //TODO do we need to do a .collect? refator to not do that?
+    //TODO delete jank placeholder tests
     match command_line_arguments::parse(env::args().collect()) {
         Some(CLICommand { kind: Run, args: _ }) => {
             println!("run!");

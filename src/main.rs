@@ -1,16 +1,37 @@
-use clap::Parser;
+//use command_line_arguments::parse;
+use std::env;
+use std::process;
 
-/// Search for a pattern in a file and display the lines that contain it.
-#[derive(Parser)]
-struct Cli {
-    /// The pattern to look for
-    pattern: String,
-    /// The path to the file to read
-    path: std::path::PathBuf,
-}
+use crate::command_line_arguments::CLICommand;
+use crate::command_line_arguments::RunOrInit::Init;
+use crate::command_line_arguments::RunOrInit::Run;
+mod command_line_arguments;
 
 fn main() {
-    let args = Cli::parse();
-
-    println!("pattern: {:?}, path: {:?}", args.pattern, args.path)
+    match command_line_arguments::parse(env::args().collect()) {
+        Some(CLICommand { kind: Run, args: _ }) => {
+            println!("run!");
+        }
+        Some(CLICommand {
+            kind: Init,
+            args: _,
+        }) => {
+            println!("init!");
+        }
+        None => {
+            eprintln!("{HELP_MSG}");
+            process::exit(1);
+        }
+    }
 }
+
+const HELP_MSG: &'static str = "I only accept arguments of
+    - --version
+    - run [run args]
+    - init [run args]
+
+  If you're unsure of what to do, read the README
+  or try running:
+    - run help
+    - init help
+  ";

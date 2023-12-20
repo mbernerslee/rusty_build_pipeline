@@ -7,9 +7,8 @@ use crate::command_line_arguments::RunOrInit::*;
 mod command_line_arguments;
 
 fn main() {
-    //TODO do we need to do a .collect? refator to not do that?
     //TODO delete jank placeholder tests
-    match command_line_arguments::parse(env::args().collect()) {
+    match command_line_arguments::parse(env::args()) {
         Some(CLICommand { kind: Run, args: _ }) => {
             println!("run!");
         }

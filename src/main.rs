@@ -1,10 +1,10 @@
-//use command_line_arguments::parse;
 use std::env;
 use std::process;
 
 use crate::command_line_arguments::RunOrInit::*;
 use crate::command_line_arguments::*;
 mod command_line_arguments;
+mod init;
 
 fn main() {
     //TODO delete jank placeholder tests
@@ -21,7 +21,7 @@ fn main() {
             args: init_args,
         }) => {
             println!("init!");
-            dbg!(init_args);
+            init::main(init_args);
         }
         None => {
             eprintln!("{HELP_MSG}");

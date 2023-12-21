@@ -1,2 +1,4 @@
 /target
 .direnv/
+example_projects/**/previous_run_result.json
+example_projects/test_project/**

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cargo build
+cargo test
+./build_pipeline/scripts/end_to_end_test

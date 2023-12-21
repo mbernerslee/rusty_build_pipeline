@@ -2,21 +2,26 @@
 use std::env;
 use std::process;
 
-use crate::command_line_arguments::CLICommand;
 use crate::command_line_arguments::RunOrInit::*;
+use crate::command_line_arguments::*;
 mod command_line_arguments;
 
 fn main() {
     //TODO delete jank placeholder tests
     match command_line_arguments::parse(env::args()) {
-        Some(CLICommand { kind: Run, args: _ }) => {
+        Some(CLICommand {
+            kind: Run,
+            args: run_args,
+        }) => {
             println!("run!");
+            dbg!(run_args);
         }
         Some(CLICommand {
             kind: Init,
-            args: _,
+            args: init_args,
         }) => {
             println!("init!");
+            dbg!(init_args);
         }
         None => {
             eprintln!("{HELP_MSG}");

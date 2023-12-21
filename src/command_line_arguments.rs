@@ -15,15 +15,15 @@ where
     T: Iterator<Item = String>,
 {
     cli_args.next();
-    let mode = cli_args.next();
+    let mode = cli_args.next().unwrap_or(String::from("none"));
     let mode_args: Vec<String> = cli_args.collect();
 
-    if mode == Some(String::from("run")) {
+    if mode == RUN {
         Some(CLICommand {
             kind: RunOrInit::Run,
             args: mode_args,
         })
-    } else if mode == Some(String::from("init")) {
+    } else if mode == INIT {
         Some(CLICommand {
             kind: RunOrInit::Init,
             args: mode_args,
@@ -32,6 +32,9 @@ where
         None
     }
 }
+
+const RUN: &'static str = "run";
+const INIT: &'static str = "init";
 
 #[cfg(test)]
 mod test {
@@ -42,7 +45,7 @@ mod test {
 
         #[test]
         fn given_run_and_more_args_returns_run() {
-            let args = ["ignored_program_name", "run", "1", "2"];
+            let args = ["ignored_program_name", RUN, "1", "2"];
             let cli_args = args.iter().map(|s| s.to_string());
             let expected_run_args = ["1", "2"].map(|s| s.to_string()).to_vec();
             let result = parse(cli_args);
@@ -55,7 +58,7 @@ mod test {
 
         #[test]
         fn given_init_and_more_args_returns_init() {
-            let args = ["ignored_program_name", "init", "1", "2"];
+            let args = ["ignored_program_name", INIT, "1", "2"];
             let cli_args = args.iter().map(|s| s.to_string());
             let expected_init_args = ["1", "2"].map(|s| s.to_string()).to_vec();
             let result = parse(cli_args);

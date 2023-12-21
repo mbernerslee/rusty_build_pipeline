@@ -1,0 +1,38 @@
+#!/bin/bash
+
+function exit_and_log_error() {
+  echo -e "\e[31m$1\e[0m"
+  exit 1
+}
+
+function test_init() {
+  ../target/debug/rusty_build_pipeline init --cwd test_project
+  if [ $? -eq 0 ]; then
+    ls test_project/build_pipeline >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+      exit_and_log_error "FAILED - init"
+    fi
+  else
+    exit_and_log_error "FAILED - init"
+  fi
+}
+
+function test_run() {
+../target/debug/rusty_build_pipeline run --cwd test_project
+if [ $? -ne 0 ]; then
+  echo "FAILED - run"
+  exit 1
+fi
+}
+
+example_projects_dir="example_projects"
+project_dir="$example_projects_dir/test_project"
+rm -rf $project_dir
+cd $example_projects_dir
+cargo new test_project > /dev/null 2>&1
+
+test_init
+test_run
+
+rm -rf $project_dir
+exit 0

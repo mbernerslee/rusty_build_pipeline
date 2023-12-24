@@ -1,11 +1,17 @@
+//use super::exit;
+use config::Config;
+
+mod config;
+mod directory_structure;
+mod exit;
+
 pub fn main(args: Vec<String>) {
-    build_config(&args)
+    create_dir_structure(config::build(args));
 }
 
-fn build_config(args: &Vec<String>) {}
-
-struct Config {
-    pub working_directory: String,
+fn create_dir_structure(maybe_config: Result<Config, String>) {
+    match maybe_config {
+        Ok(config) => directory_structure::create(config),
+        Err(error) => exit::with_error(error),
+    }
 }
-
-const DEFAULT_WORKING_DIRECTORY: &'static str = ".";

@@ -20,7 +20,6 @@ fn main() {
             kind: Init,
             args: init_args,
         }) => {
-            println!("init!");
             init::main(init_args);
         }
         None => {

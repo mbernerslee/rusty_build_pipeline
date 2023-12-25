@@ -1,7 +1,6 @@
 use std::env;
 use std::process;
 
-use crate::command_line_arguments::RunOrInit::*;
 use crate::command_line_arguments::*;
 mod command_line_arguments;
 mod init;
@@ -9,20 +8,14 @@ mod init;
 fn main() {
     //TODO delete jank placeholder tests
     match command_line_arguments::parse(env::args()) {
-        Some(CLICommand {
-            kind: Run,
-            args: run_args,
-        }) => {
+        Command::Run(run_args) => {
             println!("run!");
             dbg!(run_args);
         }
-        Some(CLICommand {
-            kind: Init,
-            args: init_args,
-        }) => {
+        Command::Init(init_args) => {
             init::main(init_args);
         }
-        None => {
+        Command::NoValidCommand => {
             eprintln!("{HELP_MSG}");
             process::exit(1);
         }

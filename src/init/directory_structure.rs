@@ -1,86 +1,37 @@
 use super::config::Config;
 
-use std::fs;
-use std::fs::File;
-use std::io::Write;
 use std::path::PathBuf;
 
-// https://stackoverflow.com/questions/49286608/what-is-the-proper-way-to-pass-a-module-as-an-argument
-pub fn create(config: Config) -> Result<(), String> {
-    let working_directory_path = working_directory_path(&config.working_directory);
-    let build_pipeline_path = build_pipeline_path(&working_directory_path);
-    let config_file_path = config_file_path(&build_pipeline_path);
+pub fn determine(config: &Config) -> DirectoryStructure {
+    let working_directory_path = new_path(&PathBuf::new(), &config.working_directory);
+    let build_pipeline_path = new_path(&working_directory_path, BUILD_PIPELINE);
 
-    check_working_directory_exists(&working_directory_path)?;
-    create_build_pipeline_directory(&build_pipeline_path)?;
-    create_config_file(&config_file_path)
-}
-
-fn check_working_directory_exists(working_directory_path: &PathBuf) -> Result<(), String> {
-    if working_directory_path.exists() {
-        Ok(())
-    } else {
-        Err(String::from("I failed because the directory you supplied does not exist. I can only initialise in a directory that already exists."))
+    DirectoryStructure {
+        working_directory_path: working_directory_path,
+        scripts_path: new_path(&build_pipeline_path, SCRIPTS),
+        config_path: new_path(&build_pipeline_path, CONFIG_JSON),
+        build_pipeline_path: build_pipeline_path,
+        config_contents: CONFIG,
     }
 }
 
-fn create_build_pipeline_directory(build_pipeline_path: &PathBuf) -> Result<(), String> {
-    if build_pipeline_path.exists() {
-        Err(create_build_pipeline_directory_error())
-    } else {
-        match fs::create_dir(build_pipeline_path) {
-            Ok(_) => Ok(()),
-            _ => Err(create_build_pipeline_directory_error()),
-        }
-    }
+#[derive(Debug, PartialEq)]
+pub struct DirectoryStructure {
+    pub working_directory_path: PathBuf,
+    pub build_pipeline_path: PathBuf,
+    pub scripts_path: PathBuf,
+    pub config_path: PathBuf,
+    pub config_contents: &'static [u8],
 }
 
-fn create_build_pipeline_directory_error() -> String {
-    String::from("I failed because the build_pipeline directory I wanted to create already exists. Maybe you've already initialised before?")
-}
-
-fn working_directory_path(working_dir_path: &String) -> PathBuf {
-    let mut path = PathBuf::new();
-    path.push(working_dir_path);
-    path
-}
-
-fn build_pipeline_path(working_directory_path: &PathBuf) -> PathBuf {
-    let mut path = working_directory_path.clone();
-    path.push(BUILD_PIPELINE);
-    path
-}
-
-fn config_file_path(build_pipeline_path: &PathBuf) -> PathBuf {
-    let mut path = build_pipeline_path.clone();
-    path.push(CONFIG_JSON);
-    path
-}
-
-fn create_config_file(config_file_path: &PathBuf) -> Result<(), String> {
-    match create_empty_config_file(config_file_path) {
-        Ok(config_file) => write_config_file(config_file),
-        Err(error) => Err(error),
-    }
-}
-
-fn write_config_file(mut config_file: File) -> Result<(), String> {
-    match config_file.write_all(CONFIG) {
-        Ok(()) => Ok(()),
-        _ => Err(String::from("I failed because I could not write to the build_pipeline/config.json file, which I have created but have left empty.")),
-    }
-}
-
-fn create_empty_config_file(config_file_path: &PathBuf) -> Result<File, String> {
-    match File::create(config_file_path) {
-        Ok(config_file) => Ok(config_file),
-        _ => Err(String::from(
-            "I failed because I could not create the build_pipeline/config.json file",
-        )),
-    }
+fn new_path(path: &PathBuf, suffix: &str) -> PathBuf {
+    let mut new_path = path.clone();
+    new_path.push(suffix);
+    new_path
 }
 
 const BUILD_PIPELINE: &'static str = "build_pipeline";
+const SCRIPTS: &'static str = "scripts";
 const CONFIG_JSON: &'static str = "config.json";
 const CONFIG: &'static [u8] = r#"[
   {
@@ -113,3 +64,45 @@ const CONFIG: &'static [u8] = r#"[
 
 "#
 .as_bytes();
+
+#[cfg(test)]
+mod test {
+
+    mod determine {
+        use super::super::*;
+
+        #[test]
+        fn given_a_config_returns_a_directory_strcuture() {
+            let config = Config {
+                working_directory: String::from("cool/path/yo"),
+            };
+
+            let directory_structure = DirectoryStructure {
+                working_directory_path: PathBuf::from("cool/path/yo"),
+                build_pipeline_path: PathBuf::from("cool/path/yo/build_pipeline"),
+                scripts_path: PathBuf::from("cool/path/yo/build_pipeline/scripts"),
+                config_path: PathBuf::from("cool/path/yo/build_pipeline/config.json"),
+                config_contents: CONFIG,
+            };
+
+            assert_eq!(directory_structure, determine(&config));
+        }
+
+        #[test]
+        fn given_a_different_config_returns_a_directory_strcuture() {
+            let config = Config {
+                working_directory: String::from("different"),
+            };
+
+            let directory_structure = DirectoryStructure {
+                working_directory_path: PathBuf::from("different"),
+                build_pipeline_path: PathBuf::from("different/build_pipeline"),
+                scripts_path: PathBuf::from("different/build_pipeline/scripts"),
+                config_path: PathBuf::from("different/build_pipeline/config.json"),
+                config_contents: CONFIG,
+            };
+
+            assert_eq!(directory_structure, determine(&config));
+        }
+    }
+}

@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 // https://stackoverflow.com/questions/49286608/what-is-the-proper-way-to-pass-a-module-as-an-argument
-pub fn create(d: DirectoryStructure) -> Result<(), String> {
+pub fn create(d: &DirectoryStructure) -> Result<(), String> {
     check_working_directory_exists(&d.working_directory_path)?;
     check_build_pipeline_directory_does_not_exist(&d.build_pipeline_path)?;
     create_build_pipeline_directory(&d.build_pipeline_path)?;

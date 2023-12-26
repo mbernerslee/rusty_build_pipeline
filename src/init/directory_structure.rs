@@ -30,10 +30,10 @@ fn new_path(path: &PathBuf, suffix: &str) -> PathBuf {
     new_path
 }
 
-const BUILD_PIPELINE: &'static str = "build_pipeline";
-const SCRIPTS: &'static str = "scripts";
-const CONFIG_JSON: &'static str = "config.json";
-const CONFIG: &'static [u8] = r#"[
+pub const BUILD_PIPELINE: &'static str = "build_pipeline";
+pub const SCRIPTS: &'static str = "scripts";
+pub const CONFIG_JSON: &'static str = "config.json";
+pub const CONFIG: &'static [u8] = r#"[
   {
     "buildStepName": "check tires",
     "commandType": "shellCommand",

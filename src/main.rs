@@ -6,7 +6,6 @@ mod command_line_arguments;
 mod init;
 
 fn main() {
-    //TODO delete jank placeholder tests
     match command_line_arguments::parse(env::args()) {
         Command::Run(run_args) => {
             println!("run!");

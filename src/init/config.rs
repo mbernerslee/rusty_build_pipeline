@@ -29,7 +29,7 @@ fn error() -> Result<Config, String> {
 
 const DEFAULT_WORKING_DIRECTORY: &'static str = ".";
 const CWD_FLAG: &'static str = "--cwd";
-const USAGE: &'static str = "I only accept arguements of:
+pub const USAGE: &'static str = "I only accept arguements of:
 
 --cwd path/to/dir (optional)
   sets the directory in which to initialise build_pipeline. Defaults to the current directory

@@ -1,9 +1,10 @@
 mod command_line_arguments;
 mod environment_variables;
 
-pub fn determine(_args: Vec<String>) -> Result<Setup, String> {
-    let mut setup = command_line_arguments::parse(args)?;
+pub fn determine(args: Vec<String>) -> Result<Setup, String> {
+    let setup = command_line_arguments::parse(args)?;
     let from_failed = environment_variables::read()?;
+    Ok(setup)
     //Ok(default())
     //match environment_variables::read() {
     //    Ok(from_failed) => from_config_file(from_failed),
@@ -11,6 +12,7 @@ pub fn determine(_args: Vec<String>) -> Result<Setup, String> {
     //}
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Mode {
     Normal,
     Verbose,
@@ -18,6 +20,7 @@ pub enum Mode {
     AnalyseSelfWorth,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Setup {
     pub cwd: String,
     pub mode: Mode,
@@ -27,7 +30,7 @@ pub struct Setup {
     pub halt_when_done: bool,
 }
 
-fn default() -> Setup {
+pub fn default() -> Setup {
     Setup {
         cwd: ".".to_string(),
         mode: Mode::Normal,

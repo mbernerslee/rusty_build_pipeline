@@ -24,6 +24,16 @@ pub struct DirectoryStructure {
     pub config_contents: &'static [u8],
 }
 
+pub trait DirectoryStructurer {
+    fn working_directory_path_exists(&self) -> bool;
+    fn build_pipeline_directory_exists(&self) -> bool;
+
+    fn create_build_pipeline_directory(&self) -> std::io::Result<()>;
+    fn create_scripts_directory(&self) -> std::io::Result<()>;
+    fn create_empty_config_file(&self) -> std::io::Result<std::fs::File>;
+    fn write_to_config_file(&self, config_file: std::fs::File) -> std::io::Result<()>;
+}
+
 fn new_path(path: &PathBuf, suffix: &str) -> PathBuf {
     let mut new_path = path.clone();
     new_path.push(suffix);

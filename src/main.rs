@@ -3,26 +3,31 @@ use std::process;
 
 use crate::command_line_arguments::*;
 mod command_line_arguments;
-mod exit;
 mod init;
+mod run;
 
 fn main() {
     match command_line_arguments::parse(env::args()) {
-        Command::Run(run_args) => {
-            println!("run!");
-            dbg!(run_args);
-        }
+        Command::Run(run_args) => match run::main(run_args) {
+            Ok(()) => (),
+            Err(error) => exit_with_error(error),
+        },
         Command::Init(init_args) => match init::main(init_args) {
             Ok(()) => (),
-            Err(error) => exit::with_error(error),
+            Err(error) => exit_with_error(error),
         },
         Command::NoValidCommand => {
-            eprintln!("{HELP_MSG}");
-            process::exit(1);
+            exit_with_error(HELP_MSG.to_string());
         }
     }
 }
 
+fn exit_with_error(error: String) {
+    eprintln!("{error}");
+    process::exit(1);
+}
+
+//TODO support running --version
 const HELP_MSG: &'static str = "I only accept arguments of
     - --version
     - run [run args]

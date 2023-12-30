@@ -6,11 +6,6 @@ pub fn determine(args: Vec<String>) -> Result<Setup, String> {
     let from_failed = environment_variables::read_from_failed()?;
     setup.from_failed = from_failed;
     command_line_arguments::parse(setup, args)
-    //Ok(default())
-    //match environment_variables::read() {
-    //    Ok(from_failed) => from_config_file(from_failed),
-    //    Err(error) => Err(error),
-    //}
 }
 
 #[derive(Debug, PartialEq)]
@@ -42,6 +37,48 @@ pub fn default() -> Setup {
     }
 }
 
-//fn from_config_file(args: Vec<String>, from_failed: bool) -> Result<Setup, String> {
-//    match config_file.read_setup()
-//}
+#[cfg(test)]
+mod test {
+    mod determine {
+        use super::super::*;
+        use crate::run::setup::command_line_arguments;
+
+        fn build_args(args: &[&str]) -> Vec<String> {
+            args.iter().map(|s| s.to_string()).collect()
+        }
+
+        #[test]
+        fn with_valid_args_retuns_a_setup() {
+            let args = build_args(&["--cwd", "cool/path"]);
+
+            let mut expected_setup = default();
+            expected_setup.cwd = String::from("cool/path");
+            //some odd code to cope with your system setting BUILD_PIPELINE_FROM_FAILED = true or
+            //false
+            match environment_variables::read_from_failed() {
+                Ok(from_failed) => expected_setup.from_failed = from_failed,
+                _ => panic!("this test shouldn't get here"),
+            }
+
+            assert_eq!(determine(args), Ok(expected_setup))
+        }
+
+        #[test]
+        fn when_from_failed_is_true_by_env_var_can_be_overriden_to_false() {
+            let args = build_args(&["--ra"]);
+
+            let mut expected_setup = default();
+            expected_setup.from_failed = false;
+
+            assert_eq!(determine(args), Ok(expected_setup))
+        }
+
+        #[test]
+        fn errors_when_the_command_line_args_are_jank() {
+            let args = build_args(&["--jank"]);
+            let error = command_line_arguments::usage();
+
+            assert_eq!(determine(args), Err(error))
+        }
+    }
+}

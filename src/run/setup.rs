@@ -1,11 +1,14 @@
 mod command_line_arguments;
+mod config_file;
 mod environment_variables;
 
 pub fn determine(args: Vec<String>) -> Result<Setup, String> {
     let mut setup = default();
     let from_failed = environment_variables::read_from_failed()?;
     setup.from_failed = from_failed;
-    command_line_arguments::parse(setup, args)
+    setup = command_line_arguments::parse(setup, args)?;
+    let _raw_config = config_file::read(&setup.cwd)?;
+    Ok(setup)
 }
 
 #[derive(Debug, PartialEq)]
@@ -49,10 +52,10 @@ mod test {
 
         #[test]
         fn with_valid_args_retuns_a_setup() {
-            let args = build_args(&["--cwd", "cool/path"]);
+            let args = build_args(&["--cwd", "example_projects/simple_and_functioning"]);
 
             let mut expected_setup = default();
-            expected_setup.cwd = String::from("cool/path");
+            expected_setup.cwd = String::from("example_projects/simple_and_functioning");
             //some odd code to cope with your system setting BUILD_PIPELINE_FROM_FAILED = true or
             //false
             match environment_variables::read_from_failed() {

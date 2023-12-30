@@ -10,7 +10,7 @@ pub fn parse(setup: Setup, args: Vec<String>) -> Result<Setup, String> {
 }
 
 fn args_are_compatible(args: &Vec<String>) -> bool {
-    for (arg, bad_args) in incompatibilities() {
+    for (arg, bad_args) in bad_arg_combos() {
         if args.iter().any(|a| a == arg) {
             for bad_arg in &bad_args {
                 if args.iter().any(|a| a == bad_arg) {
@@ -22,7 +22,7 @@ fn args_are_compatible(args: &Vec<String>) -> bool {
     true
 }
 
-fn incompatibilities() -> Vec<(&'static str, Vec<&'static str>)> {
+fn bad_arg_combos() -> Vec<(&'static str, Vec<&'static str>)> {
     vec![
         (DEBUG, vec![VERBOSE, STATS, JSON_REPORT]),
         (RUN_ALL, vec![FROM_FAILED]),
@@ -47,12 +47,12 @@ where
     T: Iterator<Item = &'a String>,
 {
     match args.next() {
-        Some(arg) => do_build_setup(arg, args, setup),
+        Some(arg) => build_setup_from_arg(arg, args, setup),
         None => Ok(setup),
     }
 }
 
-fn do_build_setup<'a, T>(arg: &String, mut args: T, mut setup: Setup) -> Result<Setup, String>
+fn build_setup_from_arg<'a, T>(arg: &String, mut args: T, mut setup: Setup) -> Result<Setup, String>
 where
     T: Iterator<Item = &'a String>,
 {

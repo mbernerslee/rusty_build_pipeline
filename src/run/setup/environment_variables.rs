@@ -2,7 +2,7 @@ use std::env;
 use std::env::VarError;
 use std::env::VarError::*;
 
-pub fn read() -> Result<bool, String> {
+pub fn read_from_failed() -> Result<bool, String> {
     read_with_reader(RealEnvVarReader {})
 }
 

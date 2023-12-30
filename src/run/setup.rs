@@ -2,9 +2,10 @@ mod command_line_arguments;
 mod environment_variables;
 
 pub fn determine(args: Vec<String>) -> Result<Setup, String> {
-    let setup = command_line_arguments::parse(args)?;
-    let from_failed = environment_variables::read()?;
-    Ok(setup)
+    let mut setup = default();
+    let from_failed = environment_variables::read_from_failed()?;
+    setup.from_failed = from_failed;
+    command_line_arguments::parse(setup, args)
     //Ok(default())
     //match environment_variables::read() {
     //    Ok(from_failed) => from_config_file(from_failed),
@@ -32,12 +33,12 @@ pub struct Setup {
 
 pub fn default() -> Setup {
     Setup {
-        cwd: ".".to_string(),
+        cwd: String::from("."),
         mode: Mode::Normal,
         from_failed: false,
         show_stats: false,
         json_report: false,
-        halt_when_done: false,
+        halt_when_done: true,
     }
 }
 

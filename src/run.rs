@@ -1,6 +1,6 @@
 mod setup;
 
 pub fn main(args: Vec<String>) -> Result<(), String> {
-    setup::determine(args);
+    let _ = setup::determine(args);
     Ok(())
 }

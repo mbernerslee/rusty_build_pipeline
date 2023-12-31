@@ -1,6 +1,6 @@
 extern crate serde_json;
 
-use super::super::build_step::*;
+use crate::build_step::*;
 
 pub fn parse(raw_config: &String) -> Result<Vec<BuildStep>, String> {
     match deserialise(raw_config) {

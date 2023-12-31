@@ -2,6 +2,7 @@ use std::env;
 use std::process;
 
 use crate::command_line_arguments::*;
+pub mod build_step;
 mod command_line_arguments;
 mod init;
 mod run;

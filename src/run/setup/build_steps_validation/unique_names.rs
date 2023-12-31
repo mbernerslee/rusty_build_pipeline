@@ -1,8 +1,8 @@
 use crate::build_step::*;
 use std::collections::HashSet;
 
-pub fn validate(build_steps: &Vec<BuildStep>) -> Result<(), String> {
-    if dbg!(names_are_unique(build_steps)) {
+pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
+    if names_are_unique(build_steps) {
         Ok(())
     } else {
         error()
@@ -38,7 +38,7 @@ mod test {
                 env_vars: None,
             }];
 
-            assert_eq!(validate(&build_steps), Ok(()))
+            assert_eq!(run(&build_steps), Ok(()))
         }
 
         #[test]
@@ -60,7 +60,7 @@ mod test {
                 },
             ];
 
-            assert_eq!(validate(&build_steps), error())
+            assert_eq!(run(&build_steps), error())
         }
     }
 }

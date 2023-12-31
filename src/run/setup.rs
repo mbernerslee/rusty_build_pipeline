@@ -1,18 +1,20 @@
-mod build_steps_validator;
+use crate::build_step::BuildStep;
+
+mod build_steps_validation;
 mod command_line_arguments;
 mod config_file;
 mod config_file_json_parser;
 mod environment_variables;
 
-pub fn determine(args: Vec<String>) -> Result<Setup, String> {
+pub fn determine(args: Vec<String>) -> Result<(Setup, Vec<BuildStep>), String> {
     let mut setup = default();
     let from_failed = environment_variables::read_from_failed()?;
     setup.from_failed = from_failed;
     setup = command_line_arguments::parse(setup, args)?;
     let raw_config = config_file::read(&setup.cwd)?;
     let build_steps = config_file_json_parser::determine_build_steps(&raw_config)?;
-    build_steps_validator::validate(&build_steps)?;
-    Ok(setup)
+    build_steps_validation::run(&build_steps)?;
+    Ok((setup, build_steps))
 }
 
 #[derive(Debug, PartialEq)]
@@ -54,6 +56,12 @@ mod test {
             args.iter().map(|s| s.to_string()).collect()
         }
 
+        fn simple_yet_functioning_build_steps() -> Vec<BuildStep> {
+            let file_path = String::from("example_projects/simple_and_functioning");
+            let config_file = config_file::read(&file_path).unwrap();
+            config_file_json_parser::determine_build_steps(&config_file).unwrap()
+        }
+
         #[test]
         fn with_valid_args_retuns_a_setup() {
             let args = build_args(&["--cwd", "example_projects/simple_and_functioning"]);
@@ -67,17 +75,24 @@ mod test {
                 _ => panic!("this test shouldn't get here"),
             }
 
-            assert_eq!(determine(args), Ok(expected_setup))
+            assert_eq!(
+                determine(args),
+                Ok((expected_setup, simple_yet_functioning_build_steps()))
+            )
         }
 
         #[test]
         fn when_from_failed_is_true_by_env_var_can_be_overriden_to_false() {
-            let args = build_args(&["--ra"]);
+            let args = build_args(&["--ra", "--cwd", "example_projects/simple_and_functioning"]);
 
             let mut expected_setup = default();
             expected_setup.from_failed = false;
+            expected_setup.cwd = String::from("example_projects/simple_and_functioning");
 
-            assert_eq!(determine(args), Ok(expected_setup))
+            assert_eq!(
+                determine(args),
+                Ok((expected_setup, simple_yet_functioning_build_steps()))
+            )
         }
 
         #[test]

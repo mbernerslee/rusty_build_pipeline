@@ -2,9 +2,9 @@ extern crate serde_json;
 
 use crate::build_step::*;
 
-pub fn parse(raw_config: &String) -> Result<Vec<BuildStep>, String> {
+pub fn determine_build_steps(raw_config: &String) -> Result<Vec<BuildStep>, String> {
     match deserialise(raw_config) {
-        Ok(json) => Ok(json),
+        Ok(build_steps) => Ok(build_steps),
         Err(parsing_error) => error(parsing_error.to_string()),
     }
 }
@@ -27,7 +27,7 @@ See more specific parsing error:
 
 #[cfg(test)]
 mod test {
-    mod parse {
+    mod determine_build_steps {
         use super::super::*;
 
         #[test]
@@ -53,7 +53,7 @@ mod test {
                 "#,
             );
 
-            assert_eq!(parse(&raw_config), Ok(expected_result))
+            assert_eq!(determine_build_steps(&raw_config), Ok(expected_result))
         }
 
         #[test]
@@ -92,14 +92,17 @@ mod test {
                 "#,
             );
 
-            assert_eq!(parse(&raw_config), Ok(expected_result))
+            assert_eq!(determine_build_steps(&raw_config), Ok(expected_result))
         }
 
         #[test]
         fn returns_error_when_its_invalid_json() {
             let expected_result = String::from("Failed to parse the config.json file.\nSee more specific parsing error:\n\ninvalid type: map, expected a sequence at line 1 column 0\n");
 
-            assert_eq!(parse(&String::from("{dffds{")), Err(expected_result))
+            assert_eq!(
+                determine_build_steps(&String::from("{dffds{")),
+                Err(expected_result)
+            )
         }
 
         #[test]
@@ -123,7 +126,7 @@ mod test {
                 "#,
             );
 
-            assert_eq!(parse(&raw_config), Err(expected_result))
+            assert_eq!(determine_build_steps(&raw_config), Err(expected_result))
         }
     }
 }

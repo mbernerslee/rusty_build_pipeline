@@ -44,13 +44,30 @@ mod test {
             }
         }
 
+        struct OkReader {}
+
+        impl FileReader for OkReader {
+            fn read_to_string(&self, _file: &String) -> std::io::Result<String> {
+                Ok(contents())
+            }
+        }
+
+        fn contents() -> String {
+            String::from("some contents")
+        }
+
         #[test]
         fn when_reading_the_file_errors_return_error() {
             let cwd = String::from("some/path");
             let error = error(&file_path(&cwd));
             assert_eq!(read_with_reader(ErrorReader {}, &cwd), error)
         }
-        //TODO continue here
+
+        #[test]
+        fn when_reading_the_file_works_return_the_contents() {
+            let cwd = String::from("some/path");
+            assert_eq!(read_with_reader(OkReader {}, &cwd), Ok(contents()))
+        }
     }
 
     mod file_path {

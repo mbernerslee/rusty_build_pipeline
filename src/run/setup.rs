@@ -1,5 +1,6 @@
 mod command_line_arguments;
 mod config_file;
+mod config_file_json_parser;
 mod environment_variables;
 
 pub fn determine(args: Vec<String>) -> Result<Setup, String> {
@@ -7,7 +8,8 @@ pub fn determine(args: Vec<String>) -> Result<Setup, String> {
     let from_failed = environment_variables::read_from_failed()?;
     setup.from_failed = from_failed;
     setup = command_line_arguments::parse(setup, args)?;
-    let _raw_config = config_file::read(&setup.cwd)?;
+    let raw_config = config_file::read(&setup.cwd)?;
+    let _config_json = config_file_json_parser::parse(&raw_config)?;
     Ok(setup)
 }
 

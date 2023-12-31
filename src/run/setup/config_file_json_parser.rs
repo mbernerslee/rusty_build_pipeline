@@ -26,9 +26,7 @@ See more specific parsing error:
 }
 
 //TODO continue here tomorrow
-//- move these structs somewhere better
-//- rename build_step_name from camel case to better one so that the parsing works in
-//example_projects/
+// change command_type to an Enum
 //- FIX INIT to make a proper config.json after the changes here
 
 #[cfg(test)]

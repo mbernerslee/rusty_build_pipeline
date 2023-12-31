@@ -1,8 +1,8 @@
 [
   {
-    "buildStepName": "exit_with_code_1",
-    "commandType": "script",
+    "build_step_name": "exit_with_code_1",
+    "command_type": "script",
     "command": "exit_with_code_1",
-    "dependsOn": []
+    "depends_on": []
   }
 ]

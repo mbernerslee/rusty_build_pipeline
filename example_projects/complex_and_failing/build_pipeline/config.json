@@ -1,10 +1,10 @@
 [
   {
-    "buildStepName": "tiresNotSlashed",
-    "commandType": "shellCommand",
+    "build_step_name": "tiresNotSlashed",
+    "command_type": "shellCommand",
     "command": "echo tires",
-    "dependsOn": [],
-    "envVars": [
+    "depends_on": [],
+    "env_vars": [
       {
         "name": "MIX_ENV",
         "value": "test"
@@ -12,41 +12,41 @@
     ]
   },
   {
-    "buildStepName": "enoughFuel",
-    "commandType": "shellCommand",
+    "build_step_name": "enoughFuel",
+    "command_type": "shellCommand",
     "command": "echo fuel",
-    "dependsOn": []
+    "depends_on": []
   },
   {
-    "buildStepName": "carWorks",
-    "commandType": "shellCommand",
+    "build_step_name": "carWorks",
+    "command_type": "shellCommand",
     "command": "echo car works",
-    "dependsOn": [
+    "depends_on": [
       "tiresNotSlashed",
       "enoughFuel"
     ]
   },
   {
-    "buildStepName": "driveToOffice",
-    "commandType": "shellCommand",
+    "build_step_name": "driveToOffice",
+    "command_type": "shellCommand",
     "command": "not a real command which will crash",
-    "dependsOn": [
+    "depends_on": [
       "carWorks"
     ]
   },
   {
-    "buildStepName": "approachHuman",
-    "commandType": "shellCommand",
+    "build_step_name": "approachHuman",
+    "command_type": "shellCommand",
     "command": "echo walk over",
-    "dependsOn": [
+    "depends_on": [
       "driveToOffice"
     ]
   },
   {
-    "buildStepName": "sayHello",
-    "commandType": "shellCommand",
+    "build_step_name": "sayHello",
+    "command_type": "shellCommand",
     "command": "echo hello",
-    "dependsOn": [
+    "depends_on": [
       "approachHuman"
     ]
   }

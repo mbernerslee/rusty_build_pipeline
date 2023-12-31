@@ -85,5 +85,13 @@ mod test {
 
             assert_eq!(determine(args), Err(error))
         }
+
+        #[test]
+        fn errors_when_config_json_file_is_jank() {
+            let args = build_args(&["--cwd", "example_projects/bad_json"]);
+            let error = String::from("Failed to parse the config.json file.\nSee more specific parsing error:\n\ninvalid type: map, expected a sequence at line 1 column 0\n");
+
+            assert_eq!(determine(args), Err(error))
+        }
     }
 }

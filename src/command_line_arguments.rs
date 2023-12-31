@@ -2,6 +2,7 @@
 pub enum Command {
     Run(Vec<String>),
     Init(Vec<String>),
+    DisplayVersion,
     NoValidCommand,
 }
 
@@ -17,6 +18,8 @@ where
         Command::Run(mode_args)
     } else if mode == INIT {
         Command::Init(mode_args)
+    } else if mode == VERSION {
+        Command::DisplayVersion
     } else {
         Command::NoValidCommand
     }
@@ -24,6 +27,7 @@ where
 
 const RUN: &'static str = "run";
 const INIT: &'static str = "init";
+const VERSION: &'static str = "--version";
 
 #[cfg(test)]
 mod test {
@@ -49,6 +53,14 @@ mod test {
             let result = parse(cli_args);
             let expected_result = Command::Init(expected_init_args);
             assert_eq!(result, expected_result);
+        }
+
+        #[test]
+        fn given_version_returns_display_version() {
+            let args = ["ignored_program_name", "--version"];
+            let cli_args = args.iter().map(|s| s.to_string());
+            let result = parse(cli_args);
+            assert_eq!(result, Command::DisplayVersion);
         }
 
         #[test]

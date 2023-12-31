@@ -1,6 +1,4 @@
 use super::config::Config;
-
-use crate::build_step::*;
 use std::path::PathBuf;
 
 pub fn determine(config: &Config) -> DirectoryStructure {
@@ -81,6 +79,7 @@ mod test {
 
     mod determine {
         use super::super::*;
+        use crate::build_step::*;
 
         #[test]
         fn given_a_config_returns_a_directory_strcuture() {

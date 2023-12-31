@@ -6,6 +6,7 @@ pub mod build_step;
 mod command_line_arguments;
 mod init;
 mod run;
+mod version;
 
 fn main() {
     match command_line_arguments::parse(env::args()) {
@@ -17,6 +18,7 @@ fn main() {
             Ok(()) => (),
             Err(error) => exit_with_error(error),
         },
+        Command::DisplayVersion => version::display(),
         Command::NoValidCommand => {
             exit_with_error(HELP_MSG.to_string());
         }
@@ -28,7 +30,6 @@ fn exit_with_error(error: String) {
     process::exit(1);
 }
 
-//TODO support running --version
 const HELP_MSG: &'static str = "I only accept arguments of
     - --version
     - run [run args]

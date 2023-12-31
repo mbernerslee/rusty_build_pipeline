@@ -9,7 +9,7 @@ pub fn parse(raw_config: &String) -> Result<Vec<BuildStep>, String> {
 }
 
 fn deserialise(raw_config: &String) -> serde_json::Result<Vec<BuildStep>> {
-    let build_steps: Vec<BuildStep> = dbg!(serde_json::from_str(raw_config.as_str()))?;
+    let build_steps: Vec<BuildStep> = serde_json::from_str(raw_config.as_str())?;
     Ok(build_steps)
 }
 
@@ -134,7 +134,7 @@ mod test {
                         "command_type": "shellCommand",
                         "command": "echo 'hello'",
                         "BAD_THING": ["something"],
-                        "FAIL_BAD_THING_IS_HERE": [
+                        "env_vars": [
                             {"name": "env_var_name_1", "value": "env_var_value_1"},
                             {"name": "env_var_name_2", "value": "env_var_value_2"}
                         ]

@@ -1,7 +1,7 @@
 [
   {
     "build_step_name": "sayHello",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo 'hello'",
     "depends_on": [
       "noExistey"

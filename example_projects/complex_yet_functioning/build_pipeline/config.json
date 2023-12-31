@@ -1,7 +1,7 @@
 [
   {
     "build_step_name": "tiresNotSlashed",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo tires",
     "depends_on": [],
     "env_vars": [
@@ -13,13 +13,13 @@
   },
   {
     "build_step_name": "enoughFuel",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo fuel",
     "depends_on": []
   },
   {
     "build_step_name": "carWorks",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo car works",
     "depends_on": [
       "tiresNotSlashed",
@@ -28,7 +28,7 @@
   },
   {
     "build_step_name": "driveToOffice",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo drive",
     "depends_on": [
       "carWorks"
@@ -36,7 +36,7 @@
   },
   {
     "build_step_name": "approachHuman",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo walk over",
     "depends_on": [
       "driveToOffice"
@@ -44,7 +44,7 @@
   },
   {
     "build_step_name": "sayHello",
-    "command_type": "shellCommand",
+    "command_type": "ShellCommand",
     "command": "echo hello",
     "depends_on": [
       "approachHuman"

@@ -26,7 +26,6 @@ See more specific parsing error:
 }
 
 //TODO continue here tomorrow
-// change command_type to an Enum
 //- FIX INIT to make a proper config.json after the changes here
 
 #[cfg(test)]
@@ -38,7 +37,7 @@ mod test {
         fn returns_build_steps_when_its_valid_json_build_steps() {
             let expected_result = vec![BuildStep {
                 build_step_name: String::from("sayHello"),
-                command_type: String::from("shellCommand"),
+                command_type: CommandType::ShellCommand,
                 command: String::from("echo 'hello'"),
                 depends_on: vec![],
                 env_vars: None,
@@ -49,7 +48,7 @@ mod test {
                     [
                       {
                         "build_step_name": "sayHello",
-                        "command_type": "shellCommand",
+                        "command_type": "ShellCommand",
                         "command": "echo 'hello'",
                         "depends_on": []
                       }
@@ -64,7 +63,7 @@ mod test {
         fn returns_build_steps_when_its_valid_json_with_env_vars() {
             let expected_result = vec![BuildStep {
                 build_step_name: String::from("sayHello"),
-                command_type: String::from("shellCommand"),
+                command_type: CommandType::ShellCommand,
                 command: String::from("echo 'hello'"),
                 depends_on: vec![String::from("something")],
                 env_vars: Some(vec![
@@ -84,7 +83,7 @@ mod test {
                     [
                       {
                         "build_step_name": "sayHello",
-                        "command_type": "shellCommand",
+                        "command_type": "ShellCommand",
                         "command": "echo 'hello'",
                         "depends_on": ["something"],
                         "env_vars": [
@@ -115,7 +114,7 @@ mod test {
                     [
                       {
                         "build_step_name": "sayHello",
-                        "command_type": "shellCommand",
+                        "command_type": "ShellCommand",
                         "command": "echo 'hello'",
                         "BAD_THING": ["something"],
                         "env_vars": [

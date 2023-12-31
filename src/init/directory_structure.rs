@@ -1,5 +1,6 @@
 use super::config::Config;
 
+use crate::build_step::*;
 use std::path::PathBuf;
 
 pub fn determine(config: &Config) -> DirectoryStructure {
@@ -43,19 +44,21 @@ fn new_path(path: &PathBuf, suffix: &str) -> PathBuf {
 pub const BUILD_PIPELINE: &'static str = "build_pipeline";
 pub const SCRIPTS: &'static str = "scripts";
 pub const CONFIG_JSON: &'static str = "config.json";
-pub const CONFIG: &'static [u8] = r#"[
+
+pub const CONFIG: &'static [u8] = r#"
+[
   {
-    "buildStepName": "check tires",
-    "commandType": "shellCommand",
+    "build_step_name": "check tires",
+    "command_type": "ShellCommand",
     "command": "echo tires OK!",
-    "dependsOn": []
+    "depends_on": []
   },
   {
-    "buildStepName": "check enough fuel",
-    "commandType": "shellCommand",
+    "build_step_name": "check enough fuel",
+    "command_type": "ShellCommand",
     "command": "echo fuel OK!",
-    "dependsOn": [],
-    "envVars": [
+    "depends_on": [],
+    "env_vars": [
       {
         "name": "SOME_ENV_VAR",
         "value": "A_COOL_ENV_VAR"
@@ -63,16 +66,14 @@ pub const CONFIG: &'static [u8] = r#"[
     ]
   },
   {
-    "buildStepName": "drive car",
-    "commandType": "shellCommand",
+    "build_step_name": "drive car",
+    "command_type": "ShellCommand",
     "command": "echo I am driving OK!",
-    "dependsOn": [
+    "depends_on": [
       "check tires", "check enough fuel"
     ]
   }
-]
-
-"#
+]"#
 .as_bytes();
 
 #[cfg(test)]
@@ -113,6 +114,43 @@ mod test {
             };
 
             assert_eq!(directory_structure, determine(&config));
+        }
+
+        #[test]
+        fn the_config_deserliases() {
+            let expected = vec![
+                BuildStep {
+                    build_step_name: String::from("check tires"),
+                    command_type: CommandType::ShellCommand,
+                    command: String::from("echo tires OK!"),
+                    depends_on: vec![],
+                    env_vars: None,
+                },
+                BuildStep {
+                    build_step_name: String::from("check enough fuel"),
+                    command_type: CommandType::ShellCommand,
+                    command: String::from("echo fuel OK!"),
+                    depends_on: vec![],
+                    env_vars: Some(vec![EnvVar {
+                        name: String::from("SOME_ENV_VAR"),
+                        value: String::from("A_COOL_ENV_VAR"),
+                    }]),
+                },
+                BuildStep {
+                    build_step_name: String::from("drive car"),
+                    command_type: CommandType::ShellCommand,
+                    command: String::from("echo I am driving OK!"),
+                    depends_on: vec![
+                        String::from("check tires"),
+                        String::from("check enough fuel"),
+                    ],
+                    env_vars: None,
+                },
+            ];
+
+            let deserliased_config: Vec<BuildStep> =
+                serde_json::from_str(std::str::from_utf8(CONFIG).unwrap()).unwrap();
+            assert_eq!(deserliased_config, expected)
         }
     }
 }

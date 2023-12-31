@@ -25,9 +25,6 @@ See more specific parsing error:
     )))
 }
 
-//TODO continue here tomorrow
-//- FIX INIT to make a proper config.json after the changes here
-
 #[cfg(test)]
 mod test {
     mod parse {

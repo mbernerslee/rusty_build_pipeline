@@ -1,5 +1,6 @@
 extern crate serde_json;
-use serde::{Deserialize, Serialize};
+
+use super::super::build_step::*;
 
 pub fn parse(raw_config: &String) -> Result<Vec<BuildStep>, String> {
     match deserialise(raw_config) {
@@ -29,21 +30,6 @@ See more specific parsing error:
 //- rename build_step_name from camel case to better one so that the parsing works in
 //example_projects/
 //- FIX INIT to make a proper config.json after the changes here
-
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct EnvVar {
-    name: String,
-    value: String,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct BuildStep {
-    build_step_name: String,
-    command_type: String,
-    command: String,
-    depends_on: Vec<String>,
-    env_vars: Option<Vec<EnvVar>>,
-}
 
 #[cfg(test)]
 mod test {

@@ -1,6 +1,8 @@
 use crate::build_step::*;
 use std::collections::{HashMap, HashSet};
 
+//TODO return a data sctructure that gives the complete dependencies list for each build step
+// do it as a separate module OR build it here AND rename this module
 pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
     let mut direct_deps: HashMap<&String, Vec<&String>> = HashMap::new();
 

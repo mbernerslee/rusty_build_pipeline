@@ -16,7 +16,6 @@ pub fn determine(args: Vec<String>) -> Result<(Setup, Vec<BuildStep>), String> {
     let build_steps = config_file_json_parser::determine_build_steps(&raw_config)?;
     build_steps_validation::run(&build_steps)?;
     setup = terminal_width::add_to_setup(setup)?;
-    dbg!(&setup);
     Ok((setup, build_steps))
 }
 

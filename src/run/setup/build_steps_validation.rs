@@ -2,7 +2,7 @@ use crate::build_step::*;
 use std::collections::{HashMap, HashSet};
 
 pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
-    let mut all_deps: HashMap<&String, Vec<&String>> = HashMap::new();
+    let mut direct_deps: HashMap<&String, Vec<&String>> = HashMap::new();
 
     for build_step in build_steps {
         let mut deps: Vec<&String> = Vec::new();
@@ -11,19 +11,19 @@ pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
             deps.push(&dependent);
         }
 
-        match all_deps.insert(&build_step.build_step_name, deps) {
+        match direct_deps.insert(&build_step.build_step_name, deps) {
             None => (),
             _ => return unique_names_error(),
         }
     }
 
-    check_circular_deps(all_deps)
+    check_circular_deps(direct_deps)
 }
 
-fn check_circular_deps(all_deps: HashMap<&String, Vec<&String>>) -> Result<(), String> {
-    for name in all_deps.keys() {
+fn check_circular_deps(direct_deps: HashMap<&String, Vec<&String>>) -> Result<(), String> {
+    for name in direct_deps.keys() {
         let my_deps: HashSet<&String> = HashSet::new();
-        check_circular_deps_from(name, my_deps, &all_deps)?
+        check_circular_deps_from(name, my_deps, &direct_deps)?
     }
     Ok(())
 }
@@ -31,13 +31,13 @@ fn check_circular_deps(all_deps: HashMap<&String, Vec<&String>>) -> Result<(), S
 fn check_circular_deps_from<'a>(
     name: &String,
     mut my_deps: HashSet<&'a String>,
-    all_deps: &HashMap<&String, Vec<&'a String>>,
+    direct_deps: &HashMap<&String, Vec<&'a String>>,
 ) -> Result<(), String> {
-    match all_deps.get(name) {
+    match direct_deps.get(name) {
         Some(deps) => {
             for dep in deps {
                 if my_deps.insert(dep) {
-                    return check_circular_deps_from(dep, my_deps, all_deps);
+                    return check_circular_deps_from(dep, my_deps, direct_deps);
                 } else {
                     return circular_deps_error();
                 }

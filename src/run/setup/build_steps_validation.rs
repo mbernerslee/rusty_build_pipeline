@@ -1,10 +1,6 @@
 use crate::build_step::*;
 use std::collections::{HashMap, HashSet};
 
-mod circular_dependencies;
-mod dependencies_exist;
-mod unique_names;
-
 pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
     let mut all_deps: HashMap<&String, Vec<&String>> = HashMap::new();
     let mut names: HashSet<&String> = HashSet::new();

@@ -176,6 +176,7 @@ mod test {
                 show_stats: false,
                 json_report: false,
                 halt_when_done: true,
+                terminal_width: 80,
             };
             assert_eq!(&setup::default(), &expected_default_setup);
             assert_eq!(

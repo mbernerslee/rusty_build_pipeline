@@ -5,6 +5,7 @@ mod command_line_arguments;
 mod config_file;
 mod config_file_json_parser;
 mod environment_variables;
+mod terminal_width;
 
 pub fn determine(args: Vec<String>) -> Result<(Setup, Vec<BuildStep>), String> {
     let mut setup = default();
@@ -14,6 +15,8 @@ pub fn determine(args: Vec<String>) -> Result<(Setup, Vec<BuildStep>), String> {
     let raw_config = config_file::read(&setup.cwd)?;
     let build_steps = config_file_json_parser::determine_build_steps(&raw_config)?;
     build_steps_validation::run(&build_steps)?;
+    setup = terminal_width::add_to_setup(setup)?;
+    dbg!(&setup);
     Ok((setup, build_steps))
 }
 
@@ -33,6 +36,7 @@ pub struct Setup {
     pub show_stats: bool,
     pub json_report: bool,
     pub halt_when_done: bool,
+    pub terminal_width: u16,
 }
 
 pub fn default() -> Setup {
@@ -43,6 +47,7 @@ pub fn default() -> Setup {
         show_stats: false,
         json_report: false,
         halt_when_done: true,
+        terminal_width: 80,
     }
 }
 

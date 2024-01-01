@@ -3,7 +3,6 @@ use std::collections::{HashMap, HashSet};
 
 pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
     let mut all_deps: HashMap<&String, Vec<&String>> = HashMap::new();
-    let mut names: HashSet<&String> = HashSet::new();
 
     for build_step in build_steps {
         let mut deps: Vec<&String> = Vec::new();
@@ -12,25 +11,19 @@ pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
             deps.push(&dependent);
         }
 
-        all_deps.insert(&build_step.build_step_name, deps);
-        if !names.insert(&build_step.build_step_name) {
-            return unique_names_error();
+        match all_deps.insert(&build_step.build_step_name, deps) {
+            None => (),
+            _ => return unique_names_error(),
         }
     }
 
-    check_circular_deps(names, all_deps)
+    check_circular_deps(all_deps)
 }
 
-fn check_circular_deps(
-    names: HashSet<&String>,
-    all_deps: HashMap<&String, Vec<&String>>,
-) -> Result<(), String> {
-    for name in names {
+fn check_circular_deps(all_deps: HashMap<&String, Vec<&String>>) -> Result<(), String> {
+    for name in all_deps.keys() {
         let my_deps: HashSet<&String> = HashSet::new();
-        match check_circular_deps_from(name, my_deps, &all_deps) {
-            Ok(()) => (),
-            Err(error) => return Err(error),
-        }
+        check_circular_deps_from(name, my_deps, &all_deps)?
     }
     Ok(())
 }
@@ -56,7 +49,7 @@ fn check_circular_deps_from<'a>(
 }
 
 fn circular_deps_error() -> Result<(), String> {
-    Err(String::from("Giving up because the config.json was invalid. I found a circular dependency! \nAt least one 'depends_on' eventually depends upon itself, meaning that the build_pipeline can never finished. Fix it"))
+    Err(String::from("Giving up because the config.json was invalid. I found a circular dependency! \nAt least one 'depends_on' eventually depends upon itself, meaning that the build_pipeline can never finish. Fix it"))
 }
 
 fn unique_names_error() -> Result<(), String> {

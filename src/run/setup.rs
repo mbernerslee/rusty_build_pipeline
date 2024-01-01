@@ -110,5 +110,13 @@ mod test {
 
             assert_eq!(determine(args), Err(error))
         }
+
+        #[test]
+        fn errors_when_the_config_is_valid_json_but_invalid_for_another_reason() {
+            let args = build_args(&["--cwd", "example_projects/bad_config"]);
+            let error = String::from("Giving up because the config.json was invalid. It has at least one 'depends_on' which doesn't exist. All depends_on must be lists of build_step_names which exist");
+
+            assert_eq!(determine(args), Err(error))
+        }
     }
 }

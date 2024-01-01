@@ -5,7 +5,7 @@ pub fn run(build_steps: &Vec<BuildStep>) -> Result<(), String> {
     if all_dependencies_exist(&build_steps) {
         Ok(())
     } else {
-        error()
+        deps_dont_exist_error()
     }
 }
 
@@ -27,7 +27,7 @@ fn all_dependencies_exist(build_steps: &Vec<BuildStep>) -> bool {
     true
 }
 
-fn error() -> Result<(), String> {
+fn deps_dont_exist_error() -> Result<(), String> {
     Err(String::from("Giving up because the config.json was invalid. It has at least one 'depends_on' which doesn't exist. All depends_on must be lists of build_step_names which exist"))
 }
 
@@ -120,7 +120,7 @@ mod test {
                 },
             ];
 
-            assert_eq!(run(&build_steps), error())
+            assert_eq!(run(&build_steps), deps_dont_exist_error())
         }
 
         #[test]
@@ -133,7 +133,7 @@ mod test {
                 env_vars: None,
             }];
 
-            assert_eq!(run(&build_steps), error())
+            assert_eq!(run(&build_steps), deps_dont_exist_error())
         }
     }
 }

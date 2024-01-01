@@ -25,7 +25,7 @@ fn error() -> Result<(), String> {
 
 #[cfg(test)]
 mod test {
-    mod determine_build_steps {
+    mod run {
         use super::super::*;
 
         #[test]

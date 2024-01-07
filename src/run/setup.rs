@@ -28,8 +28,7 @@ pub enum Mode {
     AnalyseSelfWorth,
 }
 
-pub type Branch<'a> = HashSet<&'a String>;
-pub type Tree<'a> = HashMap<&'a String, Branch<'a>>;
+pub type Tree<'a> = HashMap<&'a String, HashSet<&'a String>>;
 
 #[derive(Debug, PartialEq)]
 pub struct Setup {

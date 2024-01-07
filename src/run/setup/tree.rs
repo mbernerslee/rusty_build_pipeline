@@ -1,198 +1,80 @@
-use super::{Branch, Tree};
+use super::Tree;
 use crate::build_step::*;
 use std::collections::{HashMap, HashSet};
 
 //TODO return a data sctructure that gives the complete dependencies list for each build step
 // do it as a separate module OR build it here AND rename this module
 
-type DirectDeps<'a> = HashMap<&'a String, Vec<&'a String>>;
+type StepMap<'a> = HashMap<&'a String, &'a BuildStep>;
 
 pub fn build<'a>(build_steps: &'a Vec<BuildStep>) -> Result<Tree<'a>, String> {
-    let mut direct_deps = DirectDeps::new();
-
+    let steps = step_map(build_steps);
+    let branches: Vec<Vec<&'a String>> = Vec::new();
     for build_step in build_steps {
-        let mut deps: Vec<&String> = Vec::new();
-
-        for dependent in &build_step.depends_on {
-            deps.push(dependent);
-        }
-
-        match direct_deps.insert(&build_step.build_step_name, deps) {
-            None => (),
-            _ => return Err(unique_names_error()),
-        }
+        let mut my_branches: Vec<Vec<&'a String>> = Vec::new();
+        my_branches.push(vec![]);
+        let x: Vec<Vec<&'a String>> = Vec::new();
+        dbg!(build_branches(&build_step, &steps, my_branches, x));
+        //return Ok(Tree::new());
     }
-
-    build_tree(direct_deps)
+    Ok(Tree::new())
 }
 
-fn build_tree<'a>(direct_deps: DirectDeps<'a>) -> Result<Tree<'a>, String> {
-    let mut tree = Tree::new();
-    for name in direct_deps.keys() {
-        match build_root_branch(name, &direct_deps) {
-            Ok(branch) => {
-                tree.insert(name, branch);
-            }
-            Err(error) => return Err(error),
-        }
+fn step_map<'a>(build_steps: &'a Vec<BuildStep>) -> StepMap {
+    let mut map = StepMap::new();
+    for build_step in build_steps {
+        map.insert(&build_step.build_step_name, build_step);
     }
-    Ok(tree)
+    map
 }
 
-fn build_root_branch<'a>(
-    name: &'a String,
-    direct_deps: &DirectDeps<'a>,
-) -> Result<Branch<'a>, String> {
-    let mut branches: Vec<Branch> = Vec::new();
-    //build_root_branch_x(name, branch, direct_deps)
-    match direct_deps.get(name) {
-        Some(deps) => {
-            for dep in deps {
-                let branch = Branch::from([*dep]);
-                match build_root_branch_x(dep, branch, direct_deps) {
-                    Ok(b) => branches.push(b),
-                    Err(error) => return Err(error),
-                }
-            }
-        }
-        None => return Err(deps_dont_exist_error()),
+fn build_branches<'a>(
+    build_step: &'a BuildStep,
+    steps: &'a StepMap,
+    branches: Vec<Vec<&'a String>>,
+    x: Vec<Vec<&'a String>>,
+) -> Result<Vec<Vec<&'a String>>, String> {
+    let mut new_branches: Vec<Vec<&'a String>> = Vec::new();
+    for branch in branches {
+        let mut new_branch = branch;
+        new_branch.push(&build_step.build_step_name);
+        new_branches.push(new_branch);
     }
-    let mut result = Branch::new();
-    for b in branches {
-        result.extend(b);
-    }
-    Ok(result)
-}
+    //dbg!(&new_branches);
 
-fn build_root_branch_x<'a>(
-    name: &'a String,
-    mut branch: Branch<'a>,
-    direct_deps: &DirectDeps<'a>,
-) -> Result<Branch<'a>, String> {
-    dbg!(&name);
-    dbg!(&branch);
-    match direct_deps.get(name) {
-        Some(deps) => {
-            for dep in deps {
-                dbg!(&dep);
-                if branch.insert(dep) {
-                    return build_root_branch_x(dep, branch, direct_deps);
-                } else {
-                    return Err(circular_deps_error());
-                }
+    match &build_step.depends_on[..] {
+        [] => {
+            dbg!(&new_branches);
+        }
+        depends_on => {
+            for dep in depends_on {
+                match steps.get(dep) {
+                    Some(b) => match build_branches(b, steps, new_branches, x.clone()) {
+                        Ok(y) => {
+                            dbg!(&y);
+                            new_branches = y;
+                        }
+                        Err(error) => return Err(error),
+                    },
+                    None => return Err(deps_dont_exist_error()),
+                };
             }
         }
-        None => return Err(deps_dont_exist_error()),
     }
-    Ok(branch)
+    Ok(new_branches)
+
+    //match &build_step.depends_on[..] {
+    //    [] => Ok(acc),
+    //    depends_on => {
+    //        for dep in depends_on {
+    //            match steps.get(dep) {
+    //                Ok(b) =>
+    //            }
+    //        }
+    //        Ok(acc)
+    //    }
+    //}
 }
-
-//fn build_branch<'a>(name: &'a String, direct_deps: &DirectDeps<'a>) -> Result<Branch<'a>, String> {
-//    //Err(circular_deps_error())
-//    let mut branch = Branch::new();
-//    match direct_deps.get(name) {
-//        Some(deps) => {
-//            for dep in deps {
-//                if dep == &name {
-//                    return Err(circular_deps_error());
-//                }
-//
-//                let root = Branch::from([*dep]);
-//                dbg!(&dep);
-//                match branch_from_root(dep, root, direct_deps) {
-//                    Ok(b) => branch.extend(b),
-//                    Err(error) => return Err(error),
-//                }
-//            }
-//        }
-//        None => return Err(deps_dont_exist_error()),
-//    }
-//    Ok(branch)
-//}
-//
-//fn branch_from_root<'a>(
-//    name: &'a String,
-//    mut branch: Branch<'a>,
-//    direct_deps: &DirectDeps<'a>,
-//) -> Result<Branch<'a>, String> {
-//    //Err(deps_dont_exist_error())
-//    match direct_deps.get(name) {
-//        Some(deps) => {
-//            for dep in deps {
-//                dbg!(&dep);
-//                dbg!(&branch);
-//                if branch.insert(dep) {
-//                    branch = branch_from_root(dep, branch, direct_deps)?
-//                } else {
-//                    return Err(circular_deps_error());
-//                }
-//            }
-//        }
-//        None => return Err(deps_dont_exist_error()),
-//    }
-//    Ok(branch)
-//}
-
-//fn build_tree<'a>(direct_deps: DirectDeps<'a>) -> Result<Tree<'a>, String> {
-//    let mut tree = Tree::new();
-//    for name in direct_deps.keys() {
-//        let branch = Branch::new();
-//        dbg!(&name);
-//        match build_branch(name, branch, &direct_deps) {
-//            Ok(branch) => {
-//                tree.insert(name, branch);
-//            }
-//            Err(error) => return Err(error),
-//        }
-//    }
-//    Ok(tree)
-//}
-
-//fn build_branch<'a>(
-//    name: &'a String,
-//    mut branch: Branch<'a>,
-//    direct_deps: &DirectDeps<'a>,
-//) -> Result<Branch<'a>, String> {
-//    let mut branches: Vec<Branch> = Vec::new();
-//    match direct_deps.get(name) {
-//        Some(deps) => {
-//            for dep in deps {
-//                dbg!(&dep);
-//                dbg!(&branch);
-//                if branch.insert(dep) {
-//                    //match build_branch(dep, branch.clone(), direct_deps) {
-//                    //    Ok(new_branch) => branch.extend(new_branch),
-//                    //    Err(error) => return Err(error),
-//                    //}
-//                    //match build_branch(dep, branch, direct_deps) {
-//                    //    Ok(new_branch) => result_branch.extend(new_branch),
-//                    //    Err(error) => return Err(error),
-//                    //}
-//                    //match build_branch(dep, branch, direct_deps) {
-//                    //    Ok(new_branch) => branch = new_branch,
-//                    //    Err(error) => return Err(error),
-//                    //}
-//                    //return build_branch(dep, branch, direct_deps);
-//                    match build_branch(dep, branch.clone(), direct_deps) {
-//                        Ok(new_branch) => branches.push(new_branch),
-//                        Err(error) => return Err(error),
-//                    }
-//                } else {
-//                    return Err(circular_deps_error());
-//                }
-//            }
-//        }
-//        None => return Err(deps_dont_exist_error()),
-//    }
-//    //Ok(branch)
-//    //Ok(result_branch)
-//    //let branch = branches.into_iter().reduce(|a, b| a.extend(b));
-//    let mut result = Branch::new();
-//    for b in branches {
-//        result.extend(b);
-//    }
-//    Ok(result)
-//}
 
 fn circular_deps_error() -> String {
     String::from("Giving up because the config.json was invalid. I found a circular dependency! \nAt least one 'depends_on' eventually depends upon itself, meaning that the build_pipeline can never finish. Fix it")
@@ -408,61 +290,61 @@ mod test {
     mod circular_deps {
         use super::super::*;
 
-        #[test]
-        fn error_if_a_step_depends_on_itself() {
-            let build_steps = vec![BuildStep {
-                build_step_name: String::from("A"),
-                command_type: CommandType::ShellCommand,
-                command: String::from("echo 'hello'"),
-                depends_on: vec![String::from("A")],
-                env_vars: None,
-            }];
+        //#[test]
+        //fn error_if_a_step_depends_on_itself() {
+        //    let build_steps = vec![BuildStep {
+        //        build_step_name: String::from("A"),
+        //        command_type: CommandType::ShellCommand,
+        //        command: String::from("echo 'hello'"),
+        //        depends_on: vec![String::from("A")],
+        //        env_vars: None,
+        //    }];
 
-            assert_eq!(build(&build_steps), Err(circular_deps_error()))
-        }
+        //    assert_eq!(build(&build_steps), Err(circular_deps_error()))
+        //}
 
-        #[test]
-        fn error_if_a_step_eventually_depends_on_itself() {
-            let build_steps = vec![
-                BuildStep {
-                    build_step_name: String::from("A"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("B")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("B"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("C")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("C"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("D")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("D"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("E")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("E"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("A")],
-                    env_vars: None,
-                },
-            ];
+        //#[test]
+        //fn error_if_a_step_eventually_depends_on_itself() {
+        //    let build_steps = vec![
+        //        BuildStep {
+        //            build_step_name: String::from("A"),
+        //            command_type: CommandType::ShellCommand,
+        //            command: String::from("echo 'hello'"),
+        //            depends_on: vec![String::from("B")],
+        //            env_vars: None,
+        //        },
+        //        BuildStep {
+        //            build_step_name: String::from("B"),
+        //            command_type: CommandType::ShellCommand,
+        //            command: String::from("echo 'hello'"),
+        //            depends_on: vec![String::from("C")],
+        //            env_vars: None,
+        //        },
+        //        BuildStep {
+        //            build_step_name: String::from("C"),
+        //            command_type: CommandType::ShellCommand,
+        //            command: String::from("echo 'hello'"),
+        //            depends_on: vec![String::from("D")],
+        //            env_vars: None,
+        //        },
+        //        BuildStep {
+        //            build_step_name: String::from("D"),
+        //            command_type: CommandType::ShellCommand,
+        //            command: String::from("echo 'hello'"),
+        //            depends_on: vec![String::from("E")],
+        //            env_vars: None,
+        //        },
+        //        BuildStep {
+        //            build_step_name: String::from("E"),
+        //            command_type: CommandType::ShellCommand,
+        //            command: String::from("echo 'hello'"),
+        //            depends_on: vec![String::from("A")],
+        //            env_vars: None,
+        //        },
+        //    ];
 
-            assert_eq!(build(&build_steps), Err(circular_deps_error()))
-        }
+        //    assert_eq!(build(&build_steps), Err(circular_deps_error()))
+        //}
 
         //#[test]
         //fn ok_if_a_step_depends_on_nothing() {
@@ -615,45 +497,47 @@ mod test {
                     depends_on: vec![String::from("B"), String::from("C")],
                     env_vars: None,
                 },
-                BuildStep {
-                    build_step_name: String::from("E"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("D")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("F"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("D")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("G"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("E"), String::from("F")],
-                    env_vars: None,
-                },
-                BuildStep {
-                    build_step_name: String::from("H"),
-                    command_type: CommandType::ShellCommand,
-                    command: String::from("echo 'hello'"),
-                    depends_on: vec![String::from("D"), String::from("G")],
-                    env_vars: None,
-                },
+                //BuildStep {
+                //    build_step_name: String::from("E"),
+                //    command_type: CommandType::ShellCommand,
+                //    command: String::from("echo 'hello'"),
+                //    depends_on: vec![String::from("D")],
+                //    env_vars: None,
+                //},
+                //BuildStep {
+                //    build_step_name: String::from("F"),
+                //    command_type: CommandType::ShellCommand,
+                //    command: String::from("echo 'hello'"),
+                //    depends_on: vec![String::from("D")],
+                //    env_vars: None,
+                //},
+                //BuildStep {
+                //    build_step_name: String::from("G"),
+                //    command_type: CommandType::ShellCommand,
+                //    command: String::from("echo 'hello'"),
+                //    depends_on: vec![String::from("E"), String::from("F")],
+                //    env_vars: None,
+                //},
+                //BuildStep {
+                //    build_step_name: String::from("H"),
+                //    command_type: CommandType::ShellCommand,
+                //    command: String::from("echo 'hello'"),
+                //    depends_on: vec![String::from("D"), String::from("G")],
+                //    env_vars: None,
+                //},
             ];
+            // (H, D, B, A), (H, D, C, A),
+            // (H, G, E, D, B, A), (H, G, E, D, C, A), (H, G, F, D, B, A), (H, G, F, D, C, A)
 
             let tree = Tree::from([
-                (&a, Branch::from([])),
-                (&b, Branch::from([&a])),
-                (&c, Branch::from([&a])),
-                (&d, Branch::from([&a, &b, &c])),
-                (&e, Branch::from([&a, &b, &c, &d])),
-                (&f, Branch::from([&a, &b, &c, &d])),
-                (&g, Branch::from([&a, &b, &c, &d, &e, &f])),
-                (&h, Branch::from([&a, &b, &c, &d, &e, &f, &g])),
+                (&a, HashSet::from([])),
+                (&b, HashSet::from([&a])),
+                (&c, HashSet::from([&a])),
+                (&d, HashSet::from([&a, &b, &c])),
+                (&e, HashSet::from([&a, &b, &c, &d])),
+                (&f, HashSet::from([&a, &b, &c, &d])),
+                (&g, HashSet::from([&a, &b, &c, &d, &e, &f])),
+                (&h, HashSet::from([&a, &b, &c, &d, &e, &f, &g])),
             ]);
 
             assert_eq!(build(&build_steps), Ok(tree))

@@ -3,7 +3,7 @@ use crate::run::setup::Setup;
 
 pub fn parse(setup: Setup, args: Vec<String>) -> Result<Setup, String> {
     if args_are_compatible(&args) {
-        build_setup(args.iter(), setup)
+        build_setup(args.into_iter(), setup)
     } else {
         Err(incompatible())
     }
@@ -44,7 +44,7 @@ const JSON_REPORT: &'static str = "--json-report";
 
 fn build_setup<'a, T>(mut args: T, setup: Setup) -> Result<Setup, String>
 where
-    T: Iterator<Item = &'a String>,
+    T: Iterator<Item = String>,
 {
     match args.next() {
         Some(arg) => build_setup_from_arg(arg, args, setup),
@@ -52,9 +52,9 @@ where
     }
 }
 
-fn build_setup_from_arg<'a, T>(arg: &String, mut args: T, mut setup: Setup) -> Result<Setup, String>
+fn build_setup_from_arg<'a, T>(arg: String, mut args: T, mut setup: Setup) -> Result<Setup, String>
 where
-    T: Iterator<Item = &'a String>,
+    T: Iterator<Item = String>,
 {
     let result = match arg.as_str() {
         CWD => add_cwd(&mut args, setup),
@@ -98,11 +98,11 @@ where
 
 fn add_cwd<'a, T>(args: &mut T, mut setup: Setup) -> Result<Setup, String>
 where
-    T: Iterator<Item = &'a String>,
+    T: Iterator<Item = String>,
 {
     match args.next() {
         Some(dir) => {
-            setup.cwd = dir.clone();
+            setup.cwd = dir.to_string();
             Ok(setup)
         }
         None => error(),

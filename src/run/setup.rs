@@ -15,7 +15,7 @@ pub fn determine(args: Vec<String>) -> Result<(Setup, Vec<BuildStep>), String> {
     setup = command_line_arguments::parse(setup, args)?;
     let raw_config = config_file::read(&setup.cwd)?;
     let build_steps = config_file_json_parser::determine_build_steps(&raw_config)?;
-    let _tree = tree::build(&build_steps)?;
+    //let _tree = tree::build(&build_steps)?; // TODO
     setup = terminal_width::add_to_setup(setup)?;
     Ok((setup, build_steps))
 }
@@ -28,7 +28,7 @@ pub enum Mode {
     AnalyseSelfWorth,
 }
 
-pub type Tree<'a> = HashMap<&'a String, HashSet<&'a String>>;
+pub type Tree<'a> = HashMap<&'a str, HashSet<&'a str>>;
 
 #[derive(Debug, PartialEq)]
 pub struct Setup {

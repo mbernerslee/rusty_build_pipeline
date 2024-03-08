@@ -5,76 +5,22 @@ use std::collections::{HashMap, HashSet};
 //TODO return a data sctructure that gives the complete dependencies list for each build step
 // do it as a separate module OR build it here AND rename this module
 
-type StepMap<'a> = HashMap<&'a String, &'a BuildStep>;
+//pub fn build<'a>(build_steps: &'a Vec<BuildStep>) -> Result<Tree<'a>, String> {}
 
-pub fn build<'a>(build_steps: &'a Vec<BuildStep>) -> Result<Tree<'a>, String> {
-    let steps = step_map(build_steps);
-    let branches: Vec<Vec<&'a String>> = Vec::new();
+fn build_tree<'a>(build_steps: &'a Vec<BuildStep>) -> Tree<'a> {
+    let mut tree = Tree::new();
     for build_step in build_steps {
-        let mut my_branches: Vec<Vec<&'a String>> = Vec::new();
-        my_branches.push(vec![]);
-        let x: Vec<Vec<&'a String>> = Vec::new();
-        dbg!(build_branches(&build_step, &steps, my_branches, x));
-        //return Ok(Tree::new());
+        tree.insert(
+            &build_step.build_step_name,
+            HashSet::from_iter(build_step.depends_on.iter()),
+        );
     }
-    Ok(Tree::new())
+    return tree;
 }
 
-fn step_map<'a>(build_steps: &'a Vec<BuildStep>) -> StepMap {
-    let mut map = StepMap::new();
-    for build_step in build_steps {
-        map.insert(&build_step.build_step_name, build_step);
-    }
-    map
-}
-
-fn build_branches<'a>(
-    build_step: &'a BuildStep,
-    steps: &'a StepMap,
-    branches: Vec<Vec<&'a String>>,
-    x: Vec<Vec<&'a String>>,
-) -> Result<Vec<Vec<&'a String>>, String> {
-    let mut new_branches: Vec<Vec<&'a String>> = Vec::new();
-    for branch in branches {
-        let mut new_branch = branch;
-        new_branch.push(&build_step.build_step_name);
-        new_branches.push(new_branch);
-    }
-    //dbg!(&new_branches);
-
-    match &build_step.depends_on[..] {
-        [] => {
-            dbg!(&new_branches);
-        }
-        depends_on => {
-            for dep in depends_on {
-                match steps.get(dep) {
-                    Some(b) => match build_branches(b, steps, new_branches, x.clone()) {
-                        Ok(y) => {
-                            dbg!(&y);
-                            new_branches = y;
-                        }
-                        Err(error) => return Err(error),
-                    },
-                    None => return Err(deps_dont_exist_error()),
-                };
-            }
-        }
-    }
-    Ok(new_branches)
-
-    //match &build_step.depends_on[..] {
-    //    [] => Ok(acc),
-    //    depends_on => {
-    //        for dep in depends_on {
-    //            match steps.get(dep) {
-    //                Ok(b) =>
-    //            }
-    //        }
-    //        Ok(acc)
-    //    }
-    //}
-}
+/*fn add_indirect_dependencies(deps: &mut HashSet<&str>, current_dep: &str, tree: &mut Tree) {
+    tree.get(current_dep)
+}*/
 
 fn circular_deps_error() -> String {
     String::from("Giving up because the config.json was invalid. I found a circular dependency! \nAt least one 'depends_on' eventually depends upon itself, meaning that the build_pipeline can never finish. Fix it")

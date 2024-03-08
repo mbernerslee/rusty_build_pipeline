@@ -17,7 +17,7 @@ enum RunnerResponse {
 #[derive(Debug)]
 pub struct Runner<'a> {
     start_sender: Sender<()>,
-    build_step_name: &'a String,
+    build_step_name: &'a str,
     depends_on: &'a Vec<String>,
 }
 

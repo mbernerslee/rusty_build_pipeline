@@ -5,22 +5,44 @@ use std::collections::{HashMap, HashSet};
 //TODO return a data sctructure that gives the complete dependencies list for each build step
 // do it as a separate module OR build it here AND rename this module
 
-//pub fn build<'a>(build_steps: &'a Vec<BuildStep>) -> Result<Tree<'a>, String> {}
-
-fn build_tree<'a>(build_steps: &'a Vec<BuildStep>) -> Tree<'a> {
+/*pub fn build<'a>(build_steps: &'a Vec<BuildStep>) -> Result<Tree<'a>, String> {
     let mut tree = Tree::new();
+    build_tree(&mut tree, build_steps);
+    Ok(tree)
+}*/
+
+fn build_tree<'a>(tree: &'a mut Tree<'a>, build_steps: &'a Vec<BuildStep>) {
     for build_step in build_steps {
         tree.insert(
             &build_step.build_step_name,
-            HashSet::from_iter(build_step.depends_on.iter()),
+            HashSet::from_iter(build_step.depends_on.iter().map(|s| s.as_str())),
         );
     }
-    return tree;
+
+    for (build_step_name, depends_on) in tree.iter_mut() {
+        let deps = get_indirect_dependencies(build_step_name, &tree);
+        *depends_on = deps;
+    }
 }
 
-/*fn add_indirect_dependencies(deps: &mut HashSet<&str>, current_dep: &str, tree: &mut Tree) {
-    tree.get(current_dep)
-}*/
+fn get_indirect_dependencies<'a: 'b, 'b>(current_dep: &'a str, tree: &'a Tree) -> HashSet<&'b str> {
+    let mut deps = HashSet::new();
+    get_indirect_dependencies_helper(&mut deps, current_dep, tree);
+    deps
+}
+
+fn get_indirect_dependencies_helper<'a: 'b, 'b>(
+    deps: &mut HashSet<&'b str>,
+    current_dep: &'a str,
+    tree: &'a Tree,
+) {
+    deps.insert(current_dep);
+    if let Some(children) = tree.get(current_dep) {
+        for child in children {
+            get_indirect_dependencies_helper(deps, child, tree);
+        }
+    }
+}
 
 fn circular_deps_error() -> String {
     String::from("Giving up because the config.json was invalid. I found a circular dependency! \nAt least one 'depends_on' eventually depends upon itself, meaning that the build_pipeline can never finish. Fix it")
@@ -404,16 +426,6 @@ mod test {
 
         #[test]
         fn ok_if_steps_have_many_branching_dependencies_but_none_are_circular() {
-            let a = String::from("A");
-            let b = String::from("B");
-            let c = String::from("C");
-            let d = String::from("D");
-            let e = String::from("E");
-            let f = String::from("F");
-            let g = String::from("G");
-            let h = String::from("H");
-            let i = String::from("I");
-
             let build_steps = vec![
                 BuildStep {
                     build_step_name: String::from("A"),
@@ -475,18 +487,20 @@ mod test {
             // (H, D, B, A), (H, D, C, A),
             // (H, G, E, D, B, A), (H, G, E, D, C, A), (H, G, F, D, B, A), (H, G, F, D, C, A)
 
-            let tree = Tree::from([
-                (&a, HashSet::from([])),
-                (&b, HashSet::from([&a])),
-                (&c, HashSet::from([&a])),
-                (&d, HashSet::from([&a, &b, &c])),
-                (&e, HashSet::from([&a, &b, &c, &d])),
-                (&f, HashSet::from([&a, &b, &c, &d])),
-                (&g, HashSet::from([&a, &b, &c, &d, &e, &f])),
-                (&h, HashSet::from([&a, &b, &c, &d, &e, &f, &g])),
+            let expected_tree = Tree::from([
+                ("A", HashSet::from([])),
+                ("B", HashSet::from(["A"])),
+                ("C", HashSet::from(["A"])),
+                ("D", HashSet::from(["A", "B", "C"])),
+                ("E", HashSet::from(["A", "B", "C", "D"])),
+                ("F", HashSet::from(["A", "B", "C", "D"])),
+                ("G", HashSet::from(["A", "B", "C", "D", "E", "F"])),
+                ("H", HashSet::from(["A", "B", "C", "D", "E", "F", "G"])),
             ]);
 
-            assert_eq!(build(&build_steps), Ok(tree))
+            let mut tree = Tree::new();
+            build_tree(&mut tree, &build_steps);
+            assert_eq!(expected_tree, tree)
         }
 
         //    #[test]

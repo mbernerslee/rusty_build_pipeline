@@ -33,7 +33,7 @@ function install_nix() {
 
 function install_direnv() {
   if ! command_exists direnv; then
-    curl -sfL https://direnv.net/install.sh | zsh
+    curl -sfL https://direnv.net/install.sh | bash
   fi
 
   append_zprofile 'eval "$(direnv hook zsh)"'

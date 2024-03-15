@@ -1,9 +1,13 @@
+//////////////////////////////////
+////////// Empty impl ////////////
+//////////////////////////////////
 use crate::build_step::BuildStep;
 use crate::run::setup::Setup;
 
 pub fn run(_setup: Setup, _build_steps: Vec<BuildStep>) -> Result<(), String> {
     Ok(())
 }
+//////////////////////////////////
 
 //use crate::build_step::{BuildStep, CommandType, EnvVar};
 //use crate::run::setup::Setup;
@@ -98,3 +102,41 @@ pub fn run(_setup: Setup, _build_steps: Vec<BuildStep>) -> Result<(), String> {
 //    }
 //    Ok(())
 //}
+
+#[cfg(test)]
+mod test {
+    mod determine {
+        use super::super::*;
+        use crate::build_step::{BuildStep, CommandType};
+        use crate::run::setup::{Mode, Setup};
+
+        fn arbitrary_setup() -> Setup {
+            Setup {
+                cwd: String::from("."),
+                mode: Mode::Normal,
+                from_failed: false,
+                show_stats: false,
+                json_report: false,
+                halt_when_done: true,
+                terminal_width: 80,
+            }
+        }
+
+        #[test]
+        fn with_no_build_steps_it_works() {
+            assert_eq!(run(arbitrary_setup(), vec![]), Ok(()))
+        }
+
+        #[test]
+        fn with_a_build_step_works() {
+            let build_step = BuildStep {
+                build_step_name: String::from("say hello"),
+                command_type: CommandType::Script,
+                command: String::from("echo 'hello'"),
+                env_vars: None,
+                depends_on: vec![],
+            };
+            assert_eq!(run(arbitrary_setup(), vec![build_step]), Ok(()))
+        }
+    }
+}
